@@ -19,11 +19,11 @@ $ cargo run
 ```
 2. Input Formula (Do not forget type `;;` at end of your input)
 ```
-1#  1 + 2 ;;
+#1  1 + 2 ;;
 - : int = 3
 ```
 3. Exit: Type `exit` to quit the program
 ```
-1# exit ;;
+#1 exit ;;
 Process will be finished
 ```
