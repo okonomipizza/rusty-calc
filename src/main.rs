@@ -1,34 +1,48 @@
 use rusty_calc::get_user_input;
+use rusty_calc::lexer::{self, Token, TokenError, Value};
+use std::error::Error;
+use std::process;
 
-fn main() {
-    // ユーザーからの入力を取得
-    match get_user_input() {
-        Ok(inputs) => {
-            // Vec<String> の内容を行ごとに表示
-            for (i, line) in inputs.iter().enumerate() {
-                println!("Line {}: {}", i + 1, line.trim());
+fn main() -> Result<(), Box<dyn Error>> {
+    let mut currnt_row = 1;
+
+    // 対話を開始
+    loop {
+        // ユーザーからの入力を取得
+        let mut input_tokens: Vec<Token> = Vec::new();
+
+        match get_user_input(&mut currnt_row) {
+            Ok(input_rows) => {
+                let tokens = lexer::tokenize(&input_rows);
+                match tokens {
+                    Ok(tokens) => input_tokens.extend(tokens),
+                    Err(err) => match err {
+                        TokenError::ExitTokenIncluded => {
+                            println!("Process will be finished");
+                            process::exit(0);
+                        }
+                        _ => {
+                            continue;
+                        }
+                    },
+                }
+            }
+            Err(err) => {
+                eprintln!("Error reading input: {}", err);
+                continue;
             }
         }
-        Err(err) => {
-            eprintln!("Error occurred: {}", err);
+
+        // トークンを評価
+        let val = lexer::evaluate_tokens(input_tokens);
+        match val {
+            Ok(Value::Int(x)) => println!("- : int = {x}"),
+            Ok(Value::Float(x)) => println!("- : float = {:?}", x),
+            Ok(Value::Bool(x)) => println!("- : bool = {x}"),
+            _ => {
+                eprintln!("Unexpected evaluated value");
+                process::exit(1);
+            },
         }
     }
 }
-
-// 演算子
-// +, -, *, /, mod, =, < , >, <=, >=
-
-// 型
-// int, float, String, bool
-
-// 入力の終了はピリオド . で表現する
-
-// 値は式として評価される
-// また、実行中は行番号が各行に表示される
-// 1> 3
-// int: 3
-// 2> "Hello"
-// String : "Hello"
-
-// まずは四則演算から
-//
